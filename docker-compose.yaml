@@ -1,0 +1,128 @@
+version: "3"
+services:
+
+  # telegraf:
+  #   image: telegraf
+  #   container_name: "telegraf"
+  #   hostname: "telegraf"
+  #   restart: unless-stopped
+  #   environment:
+  #     HOST_PROC: /rootfs/proc
+  #     HOST_SYS: /rootfs/sys
+  #     HOST_ETC: /rootfs/etc
+  #   volumes:
+  #    - ./telegraf.conf:/etc/telegraf/telegraf.conf:ro
+  #    - ./telegraf.log:/var/log/telegraf/telegraf.log:ro
+  #    - /var/run/docker.sock:/var/run/docker.sock:ro
+  #    - /sys:/rootfs/sys:ro
+  #    - /proc:/rootfs/proc:ro
+  #    - /etc:/rootfs/etc:ro
+  #   networks:
+  #     - internal
+  #   depends_on: 
+  #     - influxdb
+  #     - mosquitto
+
+  #statsd:
+  #  image: graphiteapp/graphite-statsd:1.1.7-9
+  #  container_name: "graphite"
+  #  hostname: "graphite"
+  #  restart: unless-stopped
+  #  volumes:
+  #    - ./graphite_configs:/opt/graphite/conf
+  #    - ./graphite_data:/opt/graphite/storage
+  #    - ./statsd_config:/opt/statsd/config
+  #  ports:
+    #    - "80:80"
+  #     - "2003-2004:2003-2004"
+  #     - "2023-2024:2023-2024"
+  #     - "8125:8125/udp"
+  #     - "8126:8126"
+  #  labels:
+  #    - "traefik.enable=true"
+  #    ## HTTP Routers
+  #    - "traefik.http.routers.graphite-rtr.entrypoints=https"
+  #    - "traefik.http.routers.graphite-rtr.rule=Host(`graphite.moroku.de`)"
+  #    - "traefik.http.routers.graphite-rtr.tls=true"
+  #    ## Middlewares
+  #    - "traefik.http.routers.graphite-rtr.middlewares=chain-no-auth-norobots@file"
+  #    #- "traefik.http.routers.graphite-rtr.middlewares=chain-basic-auth@file"
+  #    ## HTTP Services
+  #    - "traefik.http.routers.graphite-rtr.service=graphite-svc"
+  #    - "traefik.http.services.graphite-svc.loadbalancer.server.port=80"
+  #  networks:
+  #    - internal
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: "grafana"
+    hostname: "grafana"
+    restart: unless-stopped
+    volumes:
+      - ./grafana:/var/lib/grafana
+    ports:
+      - 3000:3000
+    networks:
+      - internal
+    depends_on: 
+       - influxdb
+
+  # mosquitto:
+  #   image: eclipse-mosquitto
+  #   container_name: "mosquitto"
+  #   restart: always
+  #   volumes:
+  #     - ./mqtt_config:/mosquitto/config
+  #     - ./mqtt_data:/mosquitto/data
+  #     - ./mqtt_log:/mosquitto/log
+  #   #ports: 
+  #   #  - "1883:1883/tcp"
+  #   networks:
+  #     - internal
+  #   ports:
+  #     - 1883:1883
+
+  influxdb:
+    image: influxdb:1.8
+    # ports:
+    #   - '8086:8086'
+    volumes:
+      - ./influx_data:/var/lib/influxdb
+      - ./influxdb.conf:/etc/influxdb/influxdb.conf
+    environment:
+      - INFLUXDB_DB=db0
+      - INFLUXDB_ADMIN_USER=admin
+      - INFLUXDB_ADMIN_PASSWORD=admin
+      - INFLUXD_CONFIG_PATH=/var/lib/influxdb
+      - INFLUXDB_HTTP_ENABLED=true
+      #- INFLUXDB_HTTP_BIND_ADDRESS=":8086"
+      #- INFLUXDB_HTTP_AUTH_ENABLED=true
+    ports:
+      - 8086:8086
+    networks: 
+      - internal
+  mongodb:
+    image : mongo
+    environment:
+    - PUID=1000
+    - PGID=1000
+    - MONGO_INITDB_ROOT_USERNAME=admin
+    - MONGO_INITDB_ROOT_PASSWORD=admin
+    volumes:
+    - ./mongodb/database:/data/db
+    ports:
+    - 27017:27017
+    restart: unless-stopped
+    networks:
+      - internal
+  mongo-express:
+    image: mongo-express
+    restart: always
+    ports:
+      - 8081:8081
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: admin
+      ME_CONFIG_MONGODB_ADMINPASSWORD: admin
+      ME_CONFIG_MONGODB_URL: mongodb://admin:admin@mongodb:27017/
+networks:
+  internal:
