@@ -150,3 +150,8 @@ mongodb/
 postgres/
 pgadmin/
 .vscode/
+keys.py
+private.pem
+public.pem
+pub_keys/
+api_tester.py

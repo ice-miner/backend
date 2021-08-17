@@ -1,0 +1,5 @@
+[tool]
+[tool.dephell]
+[tool.dephell.main]
+from = {format = "imports", path = "api.py"}
+to = {format = "pip", path = "requirements.txt"}
