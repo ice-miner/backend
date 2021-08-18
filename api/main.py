@@ -5,7 +5,7 @@ from typing import Optional
 from fastapi import FastAPI, Header, Request, Response, status
 from pydantic import BaseModel
 
-from db import TPoint, Train, session_scope
+from api.db import TPoint, Train, session_scope
 
 from Crypto.PublicKey import RSA
 from hashlib import sha512
@@ -58,6 +58,23 @@ class TrainDataExport(BaseModel):
             points=[Point(**p.to_dict()) for p in train.points],
         )
 
+class TrainsExport(BaseModel):
+    tzn: str
+    series: int
+    trainType: str
+class TrainsExportList(BaseModel):
+    trains: List[TrainsExport] = []
+
+    @classmethod
+    def from_query(cls, query):
+        trains = []
+        for i in query:
+            trains.append(TrainsExport(
+                tzn=i.tzn,
+                series=i.series,
+                trainType=i.trainType
+            ))
+        return cls(trains=trains)
 
 @app.post("/traindata")
 async def post_traindata(
@@ -103,17 +120,9 @@ async def get_traindata(tzn: str):
         a = (session.query(Train).filter(Train.tzn == tzn)).first()
         return TrainDataExport.from_train(a)
 
+@app.get("/trains", response_model=TrainsExportList)
+async def get_trains():
+    with session_scope() as session:
+        q = session.query(Train).all()
+        return TrainsExportList.from_query(query=q)
 
-# @app.get("/items/")
-# async def read_items(request: Request, a: str, x_signature: str = Header(None) ):
-#     return {"User-Agent": x_signature, "Request": a}
-
-# @app.post("/items/")
-# async def write_items(request: Request, a: str, x_signature: str = Header(None) ):
-#     hash = int.from_bytes(sha512(request.scope["query_string"]).digest(), byteorder='big')
-#     for key in keys:
-#         hashFromSignature = pow(int(x_signature), key.e, key.n)
-#         if hash == hashFromSignature:
-#             return {"User-Agent": x_signature, "Request": a}
-#         else:
-#             return 401
