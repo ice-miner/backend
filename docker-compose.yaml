@@ -127,6 +127,12 @@ services:
   #   networks:
   #     - internal
 
+  iceminerBackend:
+    build: .
+    ports:
+      - 8000:8000
+      
+
   timescaledb:
     image: timescale/timescaledb:latest-pg12
     ports:
@@ -149,7 +155,7 @@ services:
         - ./pgadmin:/var/lib/pgadmin
 
     ports:
-      - "5050:80"
+      - "5050:5050"
     networks:
       - internal
     restart: unless-stopped
