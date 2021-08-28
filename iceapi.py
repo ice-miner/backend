@@ -40,7 +40,7 @@ while True:
     hash = int.from_bytes(sha512(body_bytes).digest(), byteorder='big')
     signature = pow(hash, key.d, key.n)
 
-    req = requests.post(f"http://localhost:8000/traindata",data=body, headers={"signature": str(signature)})
+    req = requests.post(f"http://195.201.25.135:8000/traindata",data=body, headers={"signature": str(signature)})
     print(req.request.url)
     print(req.text)
     print(f"logged {body}")

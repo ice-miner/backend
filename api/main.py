@@ -23,11 +23,14 @@ logger = logging.getLogger(__name__)
 
 keys = []
 
-key_path  = Path("./api/pub_keys")
+key_path  = Path("./pub_keys")
 for file in key_path.rglob("*.pem"):         #reads key files
     with file.open("r") as f:
         key = RSA.import_key(f.read())
         keys.append(key)
+
+if keys == []:
+    raise Exception("no keys found...")
 
 app = FastAPI()
 
