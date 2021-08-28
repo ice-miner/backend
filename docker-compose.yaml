@@ -65,7 +65,7 @@ services:
     networks:
       - internal
     depends_on: 
-       - influxdb
+       - timescaledb
 
   # mosquitto:
   #   image: eclipse-mosquitto
