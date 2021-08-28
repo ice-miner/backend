@@ -53,7 +53,7 @@ services:
   #  networks:
   #    - internal
 
-  grafana:
+  grafana_iceminer:
     image: grafana/grafana:latest
     container_name: "grafana"
     hostname: "grafana"
