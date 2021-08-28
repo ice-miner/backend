@@ -12,7 +12,7 @@ load_dotenv()
 
 postgres_pw = os.environ["POSTGRES_ICEDATA_PASSWORD"]
 Base = declarative_base()
-engine = create_engine(f'postgresql+psycopg2://icedata:{postgres_pw}@localhost/icedata', echo=True)
+engine = create_engine(f'postgresql+psycopg2://icedata:{postgres_pw}@timescaledb/icedata', echo=True)
 
 Session = sessionmaker()
 Session.configure(bind=engine)
