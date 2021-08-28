@@ -1,11 +1,18 @@
 import requests
 import json
-from influxdb import InfluxDBClient
+#from influxdb import InfluxDBClient
 import time
-import geohash
+#import geohash
+import requests
+from Crypto.PublicKey import RSA
+from hashlib import sha512
+from datetime import datetime
 
-client = InfluxDBClient(host='localhost', port=8086, username='admin', password='admin')
-client.switch_database("db0")
+#client = InfluxDBClient(host='localhost', port=8086, username='admin', password='admin')
+#client.switch_database("db0")
+
+with open("private.pem", "r") as f:
+    key = RSA.import_key(f.read())
 
 while True:
     try:
@@ -13,33 +20,28 @@ while True:
     except requests.exceptions.ConnectionError as e:
         print(e)
         time.sleep(1)
-    geo = geohash.encode(data["latitude"], data["longitude"])
-    json_body = [
-    {
-        "measurement": "ICE",
-        "tags": {
-            "tzn": data["tzn"],
-        },
-        "fields": {
-            #"connection": data["connection"],
-            #"serviceLevel": data["serviceLevel"],
-            #"gpsStatus   ": data["gpsStatus   "],
-            #"internet": data["internet"],
-            "latitude": data["latitude"],
-            "longitude": data["longitude"],
-            #"tileY": data["tileY"],
-            #"tileX": data["tileX"],
-            #"series": data["series"],
-            #"serverTime": data["serverTime"],
-            "speed": data["speed"],
-            "geohash": geo
-            #"trainType": data["trainType"],
-            #"tzn": data["tzn"],
-            #"wagonClass": data["wagonClass"],
-            #"connectivity": data["connectivity"],
-            #"bapInstalled": data["bapInstalled"]
-        }
-    }]
-    client.write_points(json_body)
-    print(f"logged {json_body}")
+
+
+    body = f'''{{
+    "timestamp": "{datetime.fromtimestamp(data["serverTime"]/1000).strftime("%Y-%m-%dT%H:%M:%S")}",
+    "connection": "{data["connection"]}",
+    "serviceLevel": "{data["serviceLevel"]}",
+    "gpsStatus": "{data["gpsStatus"]}",
+    "internet": "{data["internet"]}",
+    "latitude": {data["latitude"]},
+    "longitude": {data["longitude"]},
+    "series": "{data["series"]}",
+    "speed": {data["speed"]},
+    "trainType": "{data["trainType"]}",
+    "tzn": "{data["tzn"]}"
+    }}'''
+
+    body_bytes = bytes(body, "utf-8")
+    hash = int.from_bytes(sha512(body_bytes).digest(), byteorder='big')
+    signature = pow(hash, key.d, key.n)
+
+    req = requests.post(f"http://localhost:8000/traindata",data=body, headers={"signature": str(signature)})
+    print(req.request.url)
+    print(req.text)
+    print(f"logged {body}")
     time.sleep(5)

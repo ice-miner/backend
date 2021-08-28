@@ -1,14 +1,13 @@
-from sqlalchemy import Column, Integer, String, create_engine, event, Float
-from sqlalchemy.orm import relationship, sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.sql.schema import ForeignKey, MetaData
+import os
 from contextlib import contextmanager
-from sqlalchemy.sql.sqltypes import DateTime
 
 from dotenv import load_dotenv
-import os
+from sqlalchemy import Column, Float, Integer, String, create_engine, event
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship, sessionmaker
+from sqlalchemy.sql.schema import ForeignKey, MetaData
+from sqlalchemy.sql.sqltypes import TIMESTAMP, DateTime
 
-from sqlalchemy.sql.sqltypes import TIMESTAMP
 load_dotenv()
 
 postgres_pw = os.environ["POSTGRES_ICEDATA_PASSWORD"]
@@ -81,5 +80,6 @@ def session_scope():
 
 if __name__ == "__main__":
     with session_scope() as session:
-        meta.drop_all()
-        meta.create_all(engine)
+        #meta.drop_all()
+        #meta.create_all(engine)
+        print("test")

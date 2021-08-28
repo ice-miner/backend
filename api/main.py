@@ -10,10 +10,19 @@ from api.db import TPoint, Train, session_scope
 from Crypto.PublicKey import RSA
 from hashlib import sha512
 from pathlib import Path
+import logging
+
+
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG
+)
+
+logger = logging.getLogger(__name__)
+
 
 keys = []
 
-key_path  = Path("./pub_keys")
+key_path  = Path("./api/pub_keys")
 for file in key_path.rglob("*.pem"):         #reads key files
     with file.open("r") as f:
         key = RSA.import_key(f.read())
@@ -62,6 +71,7 @@ class TrainsExport(BaseModel):
     tzn: str
     series: int
     trainType: str
+
 class TrainsExportList(BaseModel):
     trains: List[TrainsExport] = []
 
@@ -108,10 +118,10 @@ async def post_traindata(
                 db_train.points.append(data)
                 session.add(data)
                 response.status_code = status.HTTP_201_CREATED
-            return response.status_code
+            return 201
         else:
             response.status_code = status.HTTP_401_UNAUTHORIZED
-            return response.status_code
+            return 401
 
 
 @app.get("/traindata/{tzn}", response_model=TrainDataExport)
@@ -120,9 +130,9 @@ async def get_traindata(tzn: str):
         a = (session.query(Train).filter(Train.tzn == tzn)).first()
         return TrainDataExport.from_train(a)
 
-@app.get("/trains", response_model=TrainsExportList)
-async def get_trains():
-    with session_scope() as session:
-        q = session.query(Train).all()
-        return TrainsExportList.from_query(query=q)
+# @app.get("/trains", response_model=TrainsExportList)
+# async def get_trains():
+#     with session_scope() as session:
+#         q = session.query(Train).all()
+#         return
 
