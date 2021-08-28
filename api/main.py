@@ -4,9 +4,10 @@ from typing import List
 from typing import Optional
 from fastapi import FastAPI, Header, Request, Response, status
 from pydantic import BaseModel
-
-from api.db import TPoint, Train, session_scope
-
+try:
+    from api.db import TPoint, Train, session_scope
+except ModuleNotFoundError:
+    from db import TPoint, Train, session_scope
 from Crypto.PublicKey import RSA
 from hashlib import sha512
 from pathlib import Path
