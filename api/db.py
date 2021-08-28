@@ -81,5 +81,5 @@ def session_scope():
 if __name__ == "__main__":
     with session_scope() as session:
         #meta.drop_all()
-        #meta.create_all(engine)
+        meta.create_all(engine)
         print("test")
