@@ -55,7 +55,7 @@ services:
 
   grafana_iceminer:
     image: grafana/grafana:latest
-    container_name: "grafana"
+    container_name: "grafana_iceminer"
     hostname: "grafana"
     restart: unless-stopped
     volumes:
